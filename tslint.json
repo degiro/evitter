@@ -1,0 +1,12 @@
+{
+  "extends": "tslint:recommended",
+  "rules": {
+    "trailing-comma": [true, {"multiline": "never", "singleline": "never"}],
+    "interface-name": [false],
+    "quotemark": [true, "single", "jsx-double"],
+    "space-before-function-paren": [true, "always"],
+    "variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore"],
+    "member-access": [true, "no-public"],
+    "max-line-length": [true, 120]
+  }
+}

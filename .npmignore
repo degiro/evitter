@@ -1,0 +1,7 @@
+coverage
+.idea
+.vscode
+.DS_Store
+package-lock.json
+src
+__tests__

@@ -1,0 +1,68 @@
+{
+  "name": "evitter",
+  "version": "1.0.0",
+  "description": "EventEmitter with parametrized subscriptions",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "jest --no-cache",
+    "pretest": "tslint \"{src,__tests__}/*.ts\"",
+    "prepublish": "rm -rf lib && tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/degiro/evitter.git"
+  },
+  "keywords": [
+    "EventEmitter",
+    "options",
+    "javascripts",
+    "parameters",
+    "subscription"
+  ],
+  "author": "degiro",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/degiro/evitter/issues"
+  },
+  "homepage": "https://github.com/degiro/evitter#readme",
+  "devDependencies": {
+    "@types/jest": "^23.3.2",
+    "jest": "^23.6.0",
+    "ts-jest": "^23.1.4",
+    "tslint": "^5.11.0",
+    "typescript": "^3.0.3"
+  },
+  "jest": {
+    "collectCoverage": true,
+    "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "html"
+    ],
+    "collectCoverageFrom": [
+      "src/*.ts"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "statements": 100,
+        "branches": 96.49,
+        "functions": 100,
+        "lines": 100
+      }
+    },
+    "testRegex": "(/test/unit/.*|\\.(spec))\\.(ts|js)$",
+    "testPathIgnorePatterns": [
+      "/node_modules/"
+    ],
+    "transform": {
+      ".ts": "ts-jest"
+    },
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "/__tests__/"
+    ],
+    "moduleFileExtensions": [
+      "ts",
+      "js"
+    ]
+  }
+}
