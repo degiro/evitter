@@ -8,7 +8,7 @@
 ## Features
 * :scissors: Zero dependencies
 * :rocket: Lightweight and fast
-* :package: Easy to use out the box
+* :package: Easy to use out of the box
 * :100: 100% test coverage
 
 ## Getting started
