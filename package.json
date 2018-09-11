@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "EventEmitter with parametrized subscriptions",
   "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "scripts": {
     "test": "jest --no-cache",
     "pretest": "tslint \"{src,__tests__}/*.ts\"",
