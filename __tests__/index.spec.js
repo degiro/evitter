@@ -1,8 +1,8 @@
 import {createSubscription, EventEmitter, EventEmitterCallback, getSubscriptionArguments} from '../src/index';
 
 describe('EventEmitter', () => {
-    const eventName: string = 'customEvent';
-    let emitter: EventEmitter;
+    const eventName = 'customEvent';
+    let emitter;
 
     beforeEach(() => {
         emitter = new EventEmitter();
@@ -12,19 +12,19 @@ describe('EventEmitter', () => {
         it('should prepare arguments for subscription', () => {
             const callback = jest.fn();
             const params = {prop: 1};
-            const context = Object.create(null);
 
-            expect(getSubscriptionArguments(eventName, params, callback, context)).toEqual({
+            expect(getSubscriptionArguments(eventName, params, callback)).toEqual({
                 callback,
-                context,
                 eventName,
                 params
             });
-            expect(getSubscriptionArguments(eventName, callback, context)).toEqual({
+            expect(getSubscriptionArguments(eventName, callback)).toEqual({
                 callback,
-                context,
-                eventName,
-                params: undefined
+                eventName
+            });
+            expect(getSubscriptionArguments(eventName, undefined, callback)).toEqual({
+                callback,
+                eventName
             });
         });
     });
@@ -33,11 +33,10 @@ describe('EventEmitter', () => {
         it('should create a subscription base on the prototype', () => {
             const callback = jest.fn();
             const subscriptionProto = {once: true};
-            const subscription = createSubscription(subscriptionProto, {context: this, callback});
+            const subscription = createSubscription(subscriptionProto, {callback});
 
             expect(subscription).toEqual({
                 callback,
-                context: this,
                 once: true
             });
         });
@@ -48,24 +47,17 @@ describe('EventEmitter', () => {
                 prop2: [2, 3]
             };
 
-            expect(createSubscription({once: true}, {context: this, callback, params})).toEqual({
+            expect(createSubscription({once: true}, {callback, params})).toEqual({
                 callback,
-                context: this,
                 once: true,
                 paramsKey: JSON.stringify(params)
             });
         });
     });
 
-    describe('#constructor()', () => {
-        it('should create a subscriptions map', () => {
-            expect(emitter.getSubscriptions()).toEqual({});
-        });
-    });
-
     describe('#on(), #emit()', () => {
         it('should subscribe and trigger events', () => {
-            const callback = jest.fn<EventEmitterCallback>();
+            const callback = jest.fn();
 
             emitter.on(eventName, {prop: 1}, callback);
 
@@ -90,7 +82,7 @@ describe('EventEmitter', () => {
             emitter.on(eventName, {prop: 1}, callbackByParams);
 
             emitter.emit(eventName, {prop: 1}, 'value1');
-            emitter.emit(eventName, 'value2' as any);
+            emitter.emit(eventName, 'value2');
 
             expect(generalCallback.mock.calls.length).toBe(2);
             expect(callbackByParams.mock.calls.length).toBe(1);
@@ -151,13 +143,8 @@ describe('EventEmitter', () => {
 
         it('should check all unsubscribe parameters', () => {
             const callback = jest.fn();
-            const context1 = {foo: 'bar1'};
-            const context2 = {foo: 'bar2'};
 
-            emitter.on('event1', {prop: 1}, callback, context1);
-            expect(emitter.getListenersCount()).toBe(1);
-
-            emitter.off('event1', {prop: 1}, callback, context2);
+            emitter.on('event1', {prop: 1}, callback);
             expect(emitter.getListenersCount()).toBe(1);
         });
 
@@ -202,19 +189,19 @@ describe('EventEmitter', () => {
 
     describe('#hasListeners()', () => {
         it('should check if emitter has event listeners, by params or not', () => {
-            const event1: string = 'event1';
-            const event2: string = 'event2';
+            const event1 = 'event1';
+            const event2 = 'event2';
             const callback1 = jest.fn();
             const callback2 = jest.fn();
             const params1 = {};
 
-            emitter.on(event1, params1, callback1 as any);
+            emitter.on(event1, params1, callback1);
             emitter.on(event2, callback2);
 
             expect(emitter.hasListeners()).toBeTruthy();
             expect(emitter.hasListeners(event1)).toBeTruthy();
             expect(emitter.hasListeners(event1, params1)).toBeTruthy();
-            expect(emitter.hasListeners(event1, params1, callback1 as any)).toBeTruthy();
+            expect(emitter.hasListeners(event1, params1, callback1)).toBeTruthy();
             expect(emitter.hasListeners(event1, callback1)).toBeTruthy();
             expect(emitter.hasListeners(event2, callback2)).toBeTruthy();
             expect(emitter.hasListeners(event1, callback2)).toBeFalsy();
@@ -225,10 +212,10 @@ describe('EventEmitter', () => {
 
     describe('#getListenersCount()', () => {
         it('should return the number of listeners', () => {
-            emitter.on('event1', jest.fn() as EventEmitterCallback);
+            emitter.on('event1', jest.fn());
             expect(emitter.getListenersCount()).toBe(1);
 
-            emitter.on('event2', jest.fn() as EventEmitterCallback);
+            emitter.on('event2', jest.fn());
             expect(emitter.getListenersCount()).toBe(2);
             expect(emitter.getListenersCount('event1')).toBe(1);
             expect(emitter.getListenersCount('event2')).toBe(1);
@@ -264,12 +251,10 @@ describe('EventEmitter', () => {
 
         it('should check all unsubscribe parameters', () => {
             const callback = jest.fn();
-            const context1 = {foo: 'bar1'};
-            const context2 = {foo: 'bar2'};
 
-            emitter.on('event1', {prop: 1}, callback, context1);
-            expect(emitter.getListenersCount('event1', {prop: 1}, callback, context1)).toBe(1);
-            expect(emitter.getListenersCount('event1', {prop: 1}, callback, context2)).toBe(0);
+            emitter.on('event1', {prop: 1}, callback);
+            expect(emitter.getListenersCount('event1', {prop: 1}, callback)).toBe(1);
+            expect(emitter.getListenersCount('event1', {prop: 2}, callback)).toBe(0);
         });
 
         it('should process unknown events', () => {

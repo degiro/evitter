@@ -3,13 +3,20 @@
     "target": "es5",
     "outDir": "lib",
     "rootDir": "src",
+    "allowJs": true,
+    "strict": true,
     "declaration": true,
     "noImplicitAny": true,
     "noUnusedParameters": true,
-    "module": "commonjs"
+    "module": "commonjs",
+    "lib": [
+      "esnext"
+    ]
   },
   "exclude": [
     "node_modules",
-    "__tests__"
+    "coverage",
+    "__tests__",
+    "*.js"
   ]
 }
