@@ -36,8 +36,9 @@ import {EventEmitter} from 'evitter';
 
 const emitter = new EventEmitter();
 const callback = () => {};
+let unsubscribe = emitter.on('event1', callback); // simple subscription
 
-emitter.on('event1', callback); // simple subscription
+unsubscribe(); // remove subscription
 emitter.on('event2', {param1: 1}, callback); // subscription with parameters
 
 emitter.emit('event1', 2); // call all 'event1' events
