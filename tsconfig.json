@@ -7,10 +7,12 @@
     "strict": true,
     "declaration": true,
     "noImplicitAny": true,
+    "noImplicitThis": true,
     "noUnusedParameters": true,
     "module": "commonjs",
     "lib": [
-      "esnext"
+      "esnext",
+      "dom"
     ]
   },
   "exclude": [

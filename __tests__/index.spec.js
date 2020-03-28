@@ -1,4 +1,4 @@
-import {createSubscription, EventEmitter, EventEmitterCallback, getSubscriptionArguments} from '../src/index';
+import {createSubscription, EventEmitter, getSubscriptionArguments} from '../src/index';
 
 describe('EventEmitter', () => {
     const eventName = 'customEvent';
@@ -58,20 +58,23 @@ describe('EventEmitter', () => {
     describe('#on(), #emit()', () => {
         it('should subscribe and trigger events', () => {
             const callback = jest.fn();
-
-            emitter.on(eventName, {prop: 1}, callback);
-
-            expect(emitter.hasListeners()).toBeTruthy();
+            const unsubscribe = emitter.on(eventName, {prop: 1}, callback);
+            expect(emitter.hasListeners()).toBe(true);
 
             emitter.emit(eventName, {prop: 1}, 9);
             emitter.emit(eventName, {prop: 2}, 8);
 
-            expect(callback.mock.calls.length).toBe(1);
-            expect(callback.mock.calls[0][0]).toEqual({
-                name: eventName
-            });
-            expect(callback.mock.calls[0][1]).toEqual({prop: 1});
-            expect(callback.mock.calls[0][2]).toBe(9);
+            unsubscribe();
+            expect(emitter.hasListeners()).toBe(false);
+            emitter.emit(eventName, {prop: 1}, 9);
+            emitter.emit(eventName, {prop: 2}, 8);
+
+            expect(callback).toHaveBeenCalledTimes(1);
+            expect(callback).toHaveBeenCalledWith(
+                {name: eventName},
+                {prop: 1},
+                9
+            );
         });
 
         it('should emit event by params or without them', () => {
@@ -84,8 +87,8 @@ describe('EventEmitter', () => {
             emitter.emit(eventName, {prop: 1}, 'value1');
             emitter.emit(eventName, 'value2');
 
-            expect(generalCallback.mock.calls.length).toBe(2);
-            expect(callbackByParams.mock.calls.length).toBe(1);
+            expect(generalCallback).toHaveBeenCalledTimes(2);
+            expect(callbackByParams).toHaveBeenCalledTimes(1);
         });
 
         it('should process events without subscriptions', () => {
@@ -106,11 +109,11 @@ describe('EventEmitter', () => {
 
             emitter.once(eventName, {prop: 1}, callback);
 
-            expect(emitter.hasListeners()).toBeTruthy();
+            expect(emitter.hasListeners()).toBe(true);
 
             emitter.emit(eventName, {prop: 1}, 9);
 
-            expect(emitter.hasListeners()).toBeFalsy();
+            expect(emitter.hasListeners()).toBe(false);
         });
     });
 
@@ -119,26 +122,33 @@ describe('EventEmitter', () => {
             const callback1 = jest.fn();
             const callback2 = jest.fn();
 
-            expect(emitter.hasListeners()).toBeFalsy();
+            expect(emitter.hasListeners()).toBe(false);
 
-            emitter.on(eventName, {prop: 1}, callback1);
+            const unsubscribeEvent1 = emitter.on(eventName, {prop: 1}, callback1);
+
+            expect(emitter.getListenersCount()).toBe(1);
+            expect(emitter.hasListeners()).toBe(true);
+
             emitter.off(eventName, {prop: 2});
-
-            expect(emitter.hasListeners()).toBeTruthy();
+            expect(emitter.getListenersCount()).toBe(1);
+            expect(emitter.hasListeners()).toBe(true);
 
             emitter.off(eventName, {prop: 1});
-
             expect(emitter.getListenersCount()).toBe(0);
-            expect(emitter.hasListeners()).toBeFalsy();
+            expect(emitter.hasListeners()).toBe(false);
+
+            unsubscribeEvent1();
+            expect(emitter.getListenersCount()).toBe(0);
+            expect(emitter.hasListeners()).toBe(false);
 
             emitter.on(eventName, {prop: 1}, callback1);
             emitter.off(eventName, {prop: 1}, callback2);
 
-            expect(emitter.hasListeners()).toBeTruthy();
+            expect(emitter.hasListeners()).toBe(true);
 
             emitter.off(eventName, {prop: 1}, callback1);
 
-            expect(emitter.hasListeners()).toBeFalsy();
+            expect(emitter.hasListeners()).toBe(false);
         });
 
         it('should check all unsubscribe parameters', () => {
@@ -198,15 +208,15 @@ describe('EventEmitter', () => {
             emitter.on(event1, params1, callback1);
             emitter.on(event2, callback2);
 
-            expect(emitter.hasListeners()).toBeTruthy();
-            expect(emitter.hasListeners(event1)).toBeTruthy();
-            expect(emitter.hasListeners(event1, params1)).toBeTruthy();
-            expect(emitter.hasListeners(event1, params1, callback1)).toBeTruthy();
-            expect(emitter.hasListeners(event1, callback1)).toBeTruthy();
-            expect(emitter.hasListeners(event2, callback2)).toBeTruthy();
-            expect(emitter.hasListeners(event1, callback2)).toBeFalsy();
-            expect(emitter.hasListeners(event2, params1)).toBeFalsy();
-            expect(emitter.hasListeners(event2, callback1)).toBeFalsy();
+            expect(emitter.hasListeners()).toBe(true);
+            expect(emitter.hasListeners(event1)).toBe(true);
+            expect(emitter.hasListeners(event1, params1)).toBe(true);
+            expect(emitter.hasListeners(event1, params1, callback1)).toBe(true);
+            expect(emitter.hasListeners(event1, callback1)).toBe(true);
+            expect(emitter.hasListeners(event2, callback2)).toBe(true);
+            expect(emitter.hasListeners(event1, callback2)).toBe(false);
+            expect(emitter.hasListeners(event2, params1)).toBe(false);
+            expect(emitter.hasListeners(event2, callback1)).toBe(false);
         });
     });
 
