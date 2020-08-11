@@ -88,7 +88,11 @@ describe('EventEmitter', () => {
             emitter.emit(eventName, 'value2');
 
             expect(generalCallback).toHaveBeenCalledTimes(2);
+            expect(generalCallback).toHaveBeenNthCalledWith(1, {name: eventName}, 'value1');
+            expect(generalCallback).toHaveBeenNthCalledWith(2, {name: eventName}, 'value2');
+
             expect(callbackByParams).toHaveBeenCalledTimes(1);
+            expect(callbackByParams).toHaveBeenNthCalledWith(1, {name: eventName}, {prop: 1}, 'value1');
         });
 
         it('should process events without subscriptions', () => {

@@ -214,7 +214,8 @@ export class EventEmitter {
                 }
 
                 if (typeof callback === 'function') {
-                    runEventCallback(callback, emitterEvent, params, data);
+                    // do not pass params to the callback which doesn't expect them
+                    runEventCallback(callback, emitterEvent, paramsKey ? params : undefined, data);
                 }
             }
         });
