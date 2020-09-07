@@ -59,13 +59,14 @@ describe('EventEmitter', () => {
         it('should subscribe and trigger events', () => {
             const callback = jest.fn();
             const unsubscribe = emitter.on(eventName, {prop: 1}, callback);
-            expect(emitter.hasListeners()).toBe(true);
+            expect(emitter.getCallbacks(eventName)).toHaveLength(1);
+            expect(emitter.getCallbacks(eventName, {prop: 1})).toHaveLength(1);
 
             emitter.emit(eventName, {prop: 1}, 9);
             emitter.emit(eventName, {prop: 2}, 8);
 
             unsubscribe();
-            expect(emitter.hasListeners()).toBe(false);
+            expect(emitter.getCallbacks(eventName)).toHaveLength(0);
             emitter.emit(eventName, {prop: 1}, 9);
             emitter.emit(eventName, {prop: 2}, 8);
 
@@ -108,12 +109,10 @@ describe('EventEmitter', () => {
             const callback = jest.fn();
 
             emitter.once(eventName, {prop: 1}, callback);
-
-            expect(emitter.hasListeners()).toBe(true);
+            expect(emitter.getCallbacks(eventName)).toHaveLength(1);
 
             emitter.emit(eventName, {prop: 1}, 9);
-
-            expect(emitter.hasListeners()).toBe(false);
+            expect(emitter.getCallbacks(eventName)).toHaveLength(0);
         });
     });
 
@@ -122,40 +121,32 @@ describe('EventEmitter', () => {
             const callback1 = jest.fn();
             const callback2 = jest.fn();
 
-            expect(emitter.hasListeners()).toBe(false);
-
             const unsubscribeEvent1 = emitter.on(eventName, {prop: 1}, callback1);
 
-            expect(emitter.getListenersCount()).toBe(1);
-            expect(emitter.hasListeners()).toBe(true);
+            expect(emitter.getCallbacks(eventName)).toHaveLength(1);
 
             emitter.off(eventName, {prop: 2});
-            expect(emitter.getListenersCount()).toBe(1);
-            expect(emitter.hasListeners()).toBe(true);
+            expect(emitter.getCallbacks(eventName)).toHaveLength(1);
 
             emitter.off(eventName, {prop: 1});
-            expect(emitter.getListenersCount()).toBe(0);
-            expect(emitter.hasListeners()).toBe(false);
+            expect(emitter.getCallbacks(eventName)).toHaveLength(0);
 
             unsubscribeEvent1();
-            expect(emitter.getListenersCount()).toBe(0);
-            expect(emitter.hasListeners()).toBe(false);
+            expect(emitter.getCallbacks(eventName)).toHaveLength(0);
 
             emitter.on(eventName, {prop: 1}, callback1);
             emitter.off(eventName, {prop: 1}, callback2);
-
-            expect(emitter.hasListeners()).toBe(true);
+            expect(emitter.getCallbacks(eventName)).toHaveLength(1);
 
             emitter.off(eventName, {prop: 1}, callback1);
-
-            expect(emitter.hasListeners()).toBe(false);
+            expect(emitter.getCallbacks(eventName)).toHaveLength(0);
         });
 
         it('should check all unsubscribe parameters', () => {
             const callback = jest.fn();
 
             emitter.on('event1', {prop: 1}, callback);
-            expect(emitter.getListenersCount()).toBe(1);
+            expect(emitter.getCallbacks('event1')).toHaveLength(1);
         });
 
         it('should remove all events', () => {
@@ -163,10 +154,12 @@ describe('EventEmitter', () => {
 
             emitter.on('event1', {prop: 1}, callback);
             emitter.on('event2', callback);
-            expect(emitter.getListenersCount()).toBe(2);
+            expect(emitter.getCallbacks('event1')).toHaveLength(1);
+            expect(emitter.getCallbacks('event2')).toHaveLength(1);
 
             emitter.off();
-            expect(emitter.getListenersCount()).toBe(0);
+            expect(emitter.getCallbacks('event1')).toHaveLength(0);
+            expect(emitter.getCallbacks('event2')).toHaveLength(0);
         });
 
         it('should remove all handlers by event name', () => {
@@ -174,105 +167,32 @@ describe('EventEmitter', () => {
 
             emitter.on('event1', {prop: 1}, callback);
             emitter.on('event2', callback);
-            expect(emitter.getListenersCount()).toBe(2);
+            expect(emitter.getCallbacks('event1')).toHaveLength(1);
+            expect(emitter.getCallbacks('event2')).toHaveLength(1);
 
             emitter.off('event1');
-            expect(emitter.getListenersCount()).toBe(1);
+            expect(emitter.getCallbacks('event1')).toHaveLength(0);
+            expect(emitter.getCallbacks('event2')).toHaveLength(1);
 
             emitter.off('event2');
-            expect(emitter.getListenersCount()).toBe(0);
+            expect(emitter.getCallbacks('event1')).toHaveLength(0);
+            expect(emitter.getCallbacks('event2')).toHaveLength(0);
         });
 
         it('should process unknown events', () => {
             const callback = jest.fn();
 
             emitter.on('event1', {prop: 1}, callback);
-            expect(emitter.getListenersCount()).toBe(1);
+            expect(emitter.getCallbacks('event1')).toHaveLength(1);
+            expect(emitter.getCallbacks('event1', {prop: 1})).toHaveLength(1);
+            expect(emitter.getCallbacks('event1', {prop: 2})).toHaveLength(0);
 
             emitter.off('event2');
-            expect(emitter.getListenersCount()).toBe(1);
+            expect(emitter.getCallbacks('event1')).toHaveLength(1);
 
             emitter.off('event2', {prop: 1});
-            expect(emitter.getListenersCount()).toBe(1);
-        });
-    });
-
-    describe('#hasListeners()', () => {
-        it('should check if emitter has event listeners, by params or not', () => {
-            const event1 = 'event1';
-            const event2 = 'event2';
-            const callback1 = jest.fn();
-            const callback2 = jest.fn();
-            const params1 = {};
-
-            emitter.on(event1, params1, callback1);
-            emitter.on(event2, callback2);
-
-            expect(emitter.hasListeners()).toBe(true);
-            expect(emitter.hasListeners(event1)).toBe(true);
-            expect(emitter.hasListeners(event1, params1)).toBe(true);
-            expect(emitter.hasListeners(event1, params1, callback1)).toBe(true);
-            expect(emitter.hasListeners(event1, callback1)).toBe(true);
-            expect(emitter.hasListeners(event2, callback2)).toBe(true);
-            expect(emitter.hasListeners(event1, callback2)).toBe(false);
-            expect(emitter.hasListeners(event2, params1)).toBe(false);
-            expect(emitter.hasListeners(event2, callback1)).toBe(false);
-        });
-    });
-
-    describe('#getListenersCount()', () => {
-        it('should return the number of listeners', () => {
-            emitter.on('event1', jest.fn());
-            expect(emitter.getListenersCount()).toBe(1);
-
-            emitter.on('event2', jest.fn());
-            expect(emitter.getListenersCount()).toBe(2);
-            expect(emitter.getListenersCount('event1')).toBe(1);
-            expect(emitter.getListenersCount('event2')).toBe(1);
-
-            const callback1 = jest.fn();
-
-            emitter.on('event2', callback1);
-            expect(emitter.getListenersCount()).toBe(3);
-            expect(emitter.getListenersCount('event1')).toBe(1);
-            expect(emitter.getListenersCount('event2')).toBe(2);
-            expect(emitter.getListenersCount('event2', callback1)).toBe(1);
-
-            const params = {
-                prop: 1
-            };
-
-            emitter.on('event2', params, callback1);
-            expect(emitter.getListenersCount()).toBe(4);
-            expect(emitter.getListenersCount('event1')).toBe(1);
-            expect(emitter.getListenersCount('event2')).toBe(3);
-            expect(emitter.getListenersCount('event2', callback1)).toBe(2);
-            expect(emitter.getListenersCount('event2', params, callback1)).toBe(1);
-        });
-
-        it('should process already unsubscribed events', () => {
-            const callback = jest.fn();
-
-            emitter.on('event1', callback);
-            expect(emitter.getListenersCount('event1')).toBe(1);
-            emitter.off();
-            expect(emitter.getListenersCount('event1')).toBe(0);
-        });
-
-        it('should check all unsubscribe parameters', () => {
-            const callback = jest.fn();
-
-            emitter.on('event1', {prop: 1}, callback);
-            expect(emitter.getListenersCount('event1', {prop: 1}, callback)).toBe(1);
-            expect(emitter.getListenersCount('event1', {prop: 2}, callback)).toBe(0);
-        });
-
-        it('should process unknown events', () => {
-            const callback = jest.fn();
-
-            emitter.on('event1', {prop: 1}, callback);
-            expect(emitter.getListenersCount('event1', {prop: 1})).toBe(1);
-            expect(emitter.getListenersCount('event2', {prop: 1})).toBe(0);
+            expect(emitter.getCallbacks('event1')).toHaveLength(1);
+            expect(emitter.getCallbacks('event2')).toHaveLength(0);
         });
     });
 });

@@ -204,53 +204,24 @@ export class EventEmitter {
         }
     }
 
-    hasListeners (
-        eventName?: string,
-        params?: EventEmitterSubscriptionParams|EventEmitterCallback,
-        callback?: EventEmitterCallback
-    ): boolean {
-        return this.getListenersCount(eventName, params, callback) > 0;
-    }
+    getCallbacks (eventName: string, params?: EventEmitterSubscriptionParams): EventEmitterCallback[] {
+        const eventSubscriptions: Set<EventEmitterSubscription>|undefined = this.subscriptions.get(eventName);
 
-    getListenersCount (
-        eventName?: string,
-        params?: EventEmitterSubscriptionParams|EventEmitterCallback,
-        callback?: EventEmitterCallback
-    ): number {
-        const {subscriptions} = this;
-        const argumentsCount: number = arguments.length;
-        let listenersCount: number = 0;
-
-        // count all subscriptions
-        if (argumentsCount === 0 || eventName === undefined) {
-            subscriptions.forEach((eventSubscriptions: Set<EventEmitterSubscription>) => {
-                listenersCount += eventSubscriptions.size;
-            });
-
-            return listenersCount;
+        if (!eventSubscriptions) {
+            return [];
         }
 
-        const eventSubscriptions: Set<EventEmitterSubscription>|undefined = subscriptions.get(eventName);
+        const callbacks: EventEmitterCallback[] = [];
+        const paramsKeyToMatch: string|undefined = params && JSON.stringify(params);
 
-        // check subscriptions only by eventName
-        if (argumentsCount === 1 || !eventSubscriptions) {
-            return eventSubscriptions ? eventSubscriptions.size : 0;
-        }
+        eventSubscriptions.forEach(({paramsKey, callback}: EventEmitterSubscription) => {
+            const matches: boolean = (!paramsKeyToMatch || paramsKey === paramsKeyToMatch);
 
-        const {callback: callbackToMatch, params: paramsArg} = getSubscriptionArguments(eventName, params, callback);
-        const paramsKeyToMatch: string|undefined = paramsArg && JSON.stringify(paramsArg);
-
-        eventSubscriptions.forEach((subscription: EventEmitterSubscription) => {
-            const matches: boolean = (
-                (!callbackToMatch || subscription.callback === callbackToMatch) &&
-                (!paramsKeyToMatch || subscription.paramsKey === paramsKeyToMatch)
-            );
-
-            if (matches) {
-                listenersCount++;
+            if (matches && callback) {
+                callbacks.push(callback)
             }
         });
 
-        return listenersCount;
+        return callbacks;
     }
 }

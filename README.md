@@ -45,20 +45,10 @@ emitter.emit('event1', 2); // call all 'event1' events
 emitter.emit('event2', {param1: 1}, {}); // call all 'event2' events that match parameters
 emitter.emit('event2', {param1: 1, params2: 4}, []); // no subscriptions there
 
-emitter.getListenersCount(); // 4
-emitter.getListenersCount('event1'); // 2
-emitter.getListenersCount('event1', callback); // 2
-emitter.getListenersCount('event2'); // 2
-emitter.getListenersCount('event2', {param1: 1}); // 1
-emitter.getListenersCount('event2', {param1: 2}); // 1
-emitter.getListenersCount('event2', {param2: 'some'}); // 0
-
-emitter.hasListeners(); // true
-emitter.hasListeners('event1'); // true
-emitter.hasListeners('event2'); // true
-emitter.hasListeners('event3'); // false
-emitter.hasListeners('event2', {param1: 1}); // true
-emitter.hasListeners('event2', {param2: 'some'}); // false
+emitter.getCallbacks('event1'); // [callback]
+emitter.getCallbacks('event2', {param1: 1}); // [callback]
+emitter.getCallbacks('event2', {param1: 2}); // []
+emitter.getCallbacks('event2', {param2: 'some'}); // []
 
 emitter.off(); // unsubscribe from all events
 emitter.off('event1'); // unsubscribe from all events with the name 'event1'
