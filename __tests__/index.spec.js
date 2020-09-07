@@ -70,19 +70,15 @@ describe('EventEmitter', () => {
             emitter.emit(eventName, {prop: 2}, 8);
 
             expect(callback).toHaveBeenCalledTimes(1);
-            expect(callback).toHaveBeenCalledWith(
-                {name: eventName},
-                {prop: 1},
-                9
-            );
+            expect(callback).toHaveBeenCalledWith({name: eventName}, 9);
         });
 
         it('should emit event by params or without them', () => {
             const generalCallback = jest.fn();
-            const callbackByParams = jest.fn();
+            const callback = jest.fn();
 
             emitter.on(eventName, generalCallback);
-            emitter.on(eventName, {prop: 1}, callbackByParams);
+            emitter.on(eventName, {prop: 1}, callback);
 
             emitter.emit(eventName, {prop: 1}, 'value1');
             emitter.emit(eventName, 'value2');
@@ -91,8 +87,8 @@ describe('EventEmitter', () => {
             expect(generalCallback).toHaveBeenNthCalledWith(1, {name: eventName}, 'value1');
             expect(generalCallback).toHaveBeenNthCalledWith(2, {name: eventName}, 'value2');
 
-            expect(callbackByParams).toHaveBeenCalledTimes(1);
-            expect(callbackByParams).toHaveBeenNthCalledWith(1, {name: eventName}, {prop: 1}, 'value1');
+            expect(callback).toHaveBeenCalledTimes(1);
+            expect(callback).toHaveBeenNthCalledWith(1, {name: eventName}, 'value1');
         });
 
         it('should process events without subscriptions', () => {

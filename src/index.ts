@@ -1,15 +1,7 @@
-export type EventEmitterCallbackWithParams<P = EventEmitterSubscriptionParams, D = any> = (
-    event: EventEmitterEvent,
-    params: P,
-    data: D
-) => any;
-
-export type EventEmitterCallbackWithoutParams<D = any> = (
+export type EventEmitterCallback<D = any> = (
     event: EventEmitterEvent,
     data: D
 ) => any;
-
-export type EventEmitterCallback = EventEmitterCallbackWithParams | EventEmitterCallbackWithoutParams;
 
 export interface EventEmitterEvent {
     name: string;
@@ -45,7 +37,7 @@ export function getSubscriptionArguments (
     if (typeof params === 'function') {
         return {
             eventName,
-            callback: params as EventEmitterCallbackWithoutParams
+            callback: params as EventEmitterCallback
         };
     }
 
@@ -94,19 +86,6 @@ export function addEventSubscription (
         // @ts-ignore
         subscription = null;
     };
-}
-
-export function runEventCallback (
-    callback: EventEmitterCallback,
-    emitterEvent: EventEmitterEvent,
-    params: EventEmitterSubscriptionParams|undefined,
-    data: any
-) {
-    if (params) {
-        (callback as EventEmitterCallbackWithParams)(emitterEvent, params, data);
-    } else {
-        (callback as EventEmitterCallbackWithoutParams)(emitterEvent, data);
-    }
 }
 
 export class EventEmitter {
@@ -215,7 +194,7 @@ export class EventEmitter {
 
                 if (typeof callback === 'function') {
                     // do not pass params to the callback which doesn't expect them
-                    runEventCallback(callback, emitterEvent, paramsKey ? params : undefined, data);
+                    callback(emitterEvent, data);
                 }
             }
         });
