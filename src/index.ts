@@ -80,11 +80,6 @@ export function addEventSubscription (
                 subscriptions.delete(eventName);
             }
         }
-
-        // @ts-ignore
-        subscriptions = null;
-        // @ts-ignore
-        subscription = null;
     };
 }
 
@@ -192,10 +187,8 @@ export class EventEmitter {
                     subscriptions.delete(subscription);
                 }
 
-                if (typeof callback === 'function') {
-                    // do not pass params to the callback which doesn't expect them
-                    callback(emitterEvent, data);
-                }
+                // do not pass params to the callback which doesn't expect them
+                callback?.(emitterEvent, data);
             }
         });
 
