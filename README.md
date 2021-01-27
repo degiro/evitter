@@ -51,8 +51,4 @@ emitter.getCallbacks('event2', {param1: 2}); // []
 emitter.getCallbacks('event2', {param2: 'some'}); // []
 
 emitter.off(); // unsubscribe from all events
-emitter.off('event1'); // unsubscribe from all events with the name 'event1'
-emitter.off('event1', callback); // unsubscribe from all events with the name 'event1' and specific callback
-emitter.off('event2', {param1: 1}); // unsubscribe from all events with the name 'event2' and specific parameters
-emitter.off('event2', {param1: 1}, callback); // unsubscribe from all events that match all arguments
 ```

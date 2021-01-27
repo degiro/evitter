@@ -55,6 +55,19 @@ describe('EventEmitter', () => {
         });
     });
 
+    describe('#getCallbacks()', () => {
+        it('should return callbacks by event name and optional options', () => {
+            const callback = jest.fn();
+            const unsubscribe = emitter.on(eventName, {prop: 1}, callback);
+
+            expect(emitter.getCallbacks(eventName)).toHaveLength(1);
+            expect(emitter.getCallbacks(eventName, {prop: 1})).toHaveLength(1);
+            expect(emitter.getCallbacks(eventName, {prop: 2})).toHaveLength(0);
+
+            unsubscribe();
+        });
+    });
+
     describe('#on(), #emit()', () => {
         it('should subscribe and trigger events', () => {
             const callback = jest.fn();
@@ -108,6 +121,14 @@ describe('EventEmitter', () => {
 
             unsubscribe();
         });
+
+        it('should check if event callback is defined', () => {
+            const unsubscribe = emitter.on('event1');
+
+            emitter.emit('event1');
+
+            unsubscribe();
+        })
     });
 
     describe('#once()', () => {
@@ -125,34 +146,6 @@ describe('EventEmitter', () => {
     });
 
     describe('#off()', () => {
-        it('should remove all specified handlers for event', () => {
-            const callback1 = jest.fn();
-            const callback2 = jest.fn();
-            const unsubscribe1 = emitter.on(eventName, {prop: 1}, callback1);
-
-            expect(emitter.getCallbacks(eventName)).toHaveLength(1);
-
-            emitter.off(eventName, {prop: 2});
-            expect(emitter.getCallbacks(eventName)).toHaveLength(1);
-
-            emitter.off(eventName, {prop: 1});
-            expect(emitter.getCallbacks(eventName)).toHaveLength(0);
-
-            unsubscribe1();
-            expect(emitter.getCallbacks(eventName)).toHaveLength(0);
-
-            const unsubscribe2 = emitter.on(eventName, {prop: 1}, callback1);
-
-            emitter.off(eventName, {prop: 1}, callback2);
-            expect(emitter.getCallbacks(eventName)).toHaveLength(1);
-
-            emitter.off(eventName, {prop: 1}, callback1);
-            expect(emitter.getCallbacks(eventName)).toHaveLength(0);
-
-            unsubscribe2();
-            expect(emitter.getCallbacks(eventName)).toHaveLength(0);
-        });
-
         it('should check all unsubscribe parameters', () => {
             const callback = jest.fn();
             const unsubscribe = emitter.on('event1', {prop: 1}, callback);
@@ -177,45 +170,6 @@ describe('EventEmitter', () => {
 
             unsubscribe1();
             unsubscribe2();
-        });
-
-        it('should remove all handlers by event name', () => {
-            const callback = jest.fn();
-            const unsubscribe1 = emitter.on('event1', {prop: 1}, callback);
-            const unsubscribe2 = emitter.on('event2', callback);
-
-            expect(emitter.getCallbacks('event1')).toHaveLength(1);
-            expect(emitter.getCallbacks('event2')).toHaveLength(1);
-
-            emitter.off('event1');
-            expect(emitter.getCallbacks('event1')).toHaveLength(0);
-            expect(emitter.getCallbacks('event2')).toHaveLength(1);
-
-            emitter.off('event2');
-            expect(emitter.getCallbacks('event1')).toHaveLength(0);
-            expect(emitter.getCallbacks('event2')).toHaveLength(0);
-
-            unsubscribe1();
-            unsubscribe2();
-        });
-
-        it('should process unknown events', () => {
-            const callback = jest.fn();
-            const unsubscribe = emitter.on('event1', {prop: 1}, callback);
-
-            expect(emitter.getCallbacks('event1')).toHaveLength(1);
-            expect(emitter.getCallbacks('event1', {prop: 1})).toHaveLength(1);
-            expect(emitter.getCallbacks('event1', {prop: 2})).toHaveLength(0);
-
-            emitter.off('event2');
-            expect(emitter.getCallbacks('event1')).toHaveLength(1);
-
-            emitter.off('event2', {prop: 1});
-            expect(emitter.getCallbacks('event1')).toHaveLength(1);
-            expect(emitter.getCallbacks('event2')).toHaveLength(0);
-
-            unsubscribe();
-            expect(emitter.getCallbacks('event1')).toHaveLength(0);
         });
     });
 });

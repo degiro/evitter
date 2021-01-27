@@ -110,52 +110,8 @@ export class EventEmitter {
         );
     }
 
-    off (
-        eventName?: string,
-        params?: EventEmitterSubscriptionParams|EventEmitterCallback,
-        callback?: EventEmitterCallback
-    ): void {
-        const {subscriptions} = this;
-        const argumentsCount: number = arguments.length;
-
-        // remove all subscriptions
-        if (argumentsCount === 0 || eventName === undefined) {
-            subscriptions.clear();
-            return;
-        }
-
-        if (argumentsCount === 1) {
-            subscriptions.delete(eventName);
-            return;
-        }
-
-        const eventSubscriptions: Set<EventEmitterSubscription>|undefined = subscriptions.get(eventName);
-
-        if (!eventSubscriptions) {
-            return;
-        }
-
-        const {callback: callbackToMatch, params: paramsArg} = getSubscriptionArguments(eventName, params, callback);
-        const paramsKeyToMatch: string|undefined = paramsArg && JSON.stringify(paramsArg);
-
-        eventSubscriptions.forEach((
-            subscription: EventEmitterSubscription,
-            _: EventEmitterSubscription,
-            subscriptions: Set<EventEmitterSubscription>
-        ) => {
-            const matches: boolean = (
-                (!callbackToMatch || subscription.callback === callbackToMatch) &&
-                (!paramsKeyToMatch || subscription.paramsKey === paramsKeyToMatch)
-            );
-
-            if (matches) {
-                subscriptions.delete(subscription);
-            }
-        });
-
-        if (!eventSubscriptions.size) {
-            subscriptions.delete(eventName);
-        }
+    off (): void {
+        this.subscriptions.clear();
     }
 
     emit (eventName: string, params?: EventEmitterSubscriptionParams, data?: any): void {
